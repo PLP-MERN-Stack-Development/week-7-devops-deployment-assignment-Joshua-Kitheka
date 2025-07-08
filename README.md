@@ -1,78 +1,161 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-2e0aaae1b6195c2367325f4f02e2d04e9abb55f0b24a779b69b11b9e10269abc.svg)](https://classroom.github.com/online_ide?assignment_repo_id=19910935&assignment_repo_type=AssignmentRepo)
-# Deployment and DevOps for MERN Applications
+Task 1: Preparing the Application for Deployment
+🔧 React Frontend Optimization
+Run production build:
 
-This assignment focuses on deploying a full MERN stack application to production, implementing CI/CD pipelines, and setting up monitoring for your application.
+bash
+npm run build
+Code Splitting: Leverage React's lazy loading and dynamic imports:
 
-## Assignment Overview
+js
+const BugList = React.lazy(() => import('./components/BugList'));
+Environment Variables: Create .env.production and .env.development files with values like REACT_APP_API_URL.
 
-You will:
-1. Prepare your MERN application for production deployment
-2. Deploy the backend to a cloud platform
-3. Deploy the frontend to a static hosting service
-4. Set up CI/CD pipelines with GitHub Actions
-5. Implement monitoring and maintenance strategies
+🛡️ Express Backend Preparation
+Use secure headers with helmet:
 
-## Getting Started
+js
+const helmet = require('helmet');
+app.use(helmet());
+Add error handling middleware:
 
-1. Accept the GitHub Classroom assignment invitation
-2. Clone your personal repository that was created by GitHub Classroom
-3. Follow the setup instructions in the `Week7-Assignment.md` file
-4. Use the provided templates and configuration files as a starting point
+js
+app.use((err, req, res, next) => {
+  console.error(err.message);
+  res.status(500).json({ error: 'Server error' });
+});
+Load .env values via dotenv:
 
-## Files Included
+js
+require('dotenv').config();
+Production logging using winston or morgan:
 
-- `Week7-Assignment.md`: Detailed assignment instructions
-- `.github/workflows/`: GitHub Actions workflow templates
-- `deployment/`: Deployment configuration files and scripts
-- `.env.example`: Example environment variable templates
-- `monitoring/`: Monitoring configuration examples
+js
+app.use(require('morgan')('combined'));
+🗄️ MongoDB Atlas Setup
+Create a cluster via MongoDB Atlas
 
-## Requirements
+Whitelist IP and create a database user
 
-- A completed MERN stack application from previous weeks
-- Accounts on the following services:
-  - GitHub
-  - MongoDB Atlas
-  - Render, Railway, or Heroku (for backend)
-  - Vercel, Netlify, or GitHub Pages (for frontend)
-- Basic understanding of CI/CD concepts
+Set permissions (read/write, admin)
 
-## Deployment Platforms
+Use connection pooling:
 
-### Backend Deployment Options
-- **Render**: Easy to use, free tier available
-- **Railway**: Developer-friendly, generous free tier
-- **Heroku**: Well-established, extensive documentation
+js
+mongoose.connect(MONGO_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true, 
+  poolSize: 10 
+});
+☁️ Task 2: Deploying the Backend
+🚀 Render/Railway/Heroku Steps
+Link GitHub repository
 
-### Frontend Deployment Options
-- **Vercel**: Optimized for React apps, easy integration
-- **Netlify**: Great for static sites, good CI/CD
-- **GitHub Pages**: Free, integrated with GitHub
+Set environment variables (MONGO_URI, PORT, etc.)
 
-## CI/CD Pipeline
+Use build/start commands:
 
-The assignment includes templates for setting up GitHub Actions workflows:
-- `frontend-ci.yml`: Tests and builds the React application
-- `backend-ci.yml`: Tests the Express.js backend
-- `frontend-cd.yml`: Deploys the frontend to your chosen platform
-- `backend-cd.yml`: Deploys the backend to your chosen platform
+json
+"start": "node index.js"
+Optional: Add a custom domain and enable SSL
 
-## Submission
+Use built-in monitoring features and integrate logging via services like Logtail or Datadog
 
-Your work will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
+🌐 Task 3: Deploying the Frontend
+🚀 Vercel/Netlify Setup
+Push frontend code to GitHub
 
-1. Complete all deployment tasks
-2. Set up CI/CD pipelines with GitHub Actions
-3. Deploy both frontend and backend to production
-4. Document your deployment process in the README.md
-5. Include screenshots of your CI/CD pipeline in action
-6. Add URLs to your deployed applications
+Connect repo via dashboard
 
-## Resources
+Set build command:
 
-- [GitHub Actions Documentation](https://docs.github.com/en/actions)
-- [MongoDB Atlas Documentation](https://docs.atlas.mongodb.com/)
-- [Render Documentation](https://render.com/docs)
-- [Railway Documentation](https://docs.railway.app/)
-- [Vercel Documentation](https://vercel.com/docs)
-- [Netlify Documentation](https://docs.netlify.com/) 
+bash
+npm run build
+Set output directory:
+
+dist or build
+Configure HTTPS and custom domains in the dashboard
+
+Caching via headers:
+
+Cache-Control: public, max-age=31536000
+🔁 Task 4: CI/CD Pipeline Setup
+⚙️ GitHub Actions Workflow Example (main.yml)
+yaml
+name: CI/CD Pipeline
+
+on: [push]
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: npm install
+      - name: Run tests
+        run: npm test
+      - name: Deploy
+        run: echo "Trigger Render/Vercel deployment"
+Linting: Add ESLint step
+
+Set up staging with a branch like develop
+
+Rollback: Use version tagging or manual deployment selection
+
+📈 Task 5: Monitoring and Maintenance
+🩺 Monitoring
+Health Check Endpoint:
+
+js
+app.get('/health', (req, res) => res.send('OK'));
+Uptime Monitoring: Use UptimeRobot or BetterUptime
+
+Error Tracking: Integrate Sentry in both frontend and backend
+
+Performance:
+
+Backend: Log API response times
+
+Frontend: Use Lighthouse audits, React Profiler
+
+🧼 Maintenance Plan
+Weekly dependency updates with npm-check
+
+Database backups via MongoDB Atlas automated backup
+
+Document rollback procedures:
+
+markdown
+## Rollback Instructions
+1. Restore previous deployment version
+2. Run integrity tests
+3. Confirm database rollback (if applicable)
+📄 README.md Structure
+markdown
+# MERN Bug Tracker
+
+## 🛠️ Setup
+- Clone repo
+- Run `npm install` in `server/` and `client/`
+- Set environment variables (`.env.example` provided)
+
+## 🚀 Deployment
+- [Live Frontend](https://your-vercel-app.vercel.app)
+- [Live Backend API](https://your-render-api.onrender.com)
+
+## 🔁 CI/CD
+- GitHub Actions workflow in `.github/workflows/main.yml`
+- Includes linting, testing, and deployment
+
+## 📈 Monitoring Setup
+- Sentry integrated for error tracking
+- Health checks at `/health`
+- Uptime monitoring via UptimeRobot
+
+## 🧪 Testing & Quality
+- Jest and React Testing Library for tests
+- ESLint configured
+
+## 🔄 Maintenance Strategy
+- Regular backups
+- Rollback via GitHub tags
